@@ -20,7 +20,9 @@ export async function restoreCookies(page: Page, file = "cookies.json") {
 }
 
 export async function init(parseAds: boolean = true) {
-  await using browser = await launch({ headless: Deno.env.get("HEADLESS") === "true" });
+  await using browser = await launch({
+    headless: Deno.env.get("HEADLESS") === "true",
+  });
 
   if (parseAds) {
     await parseList(browser).catch(console.error);
