@@ -25,7 +25,7 @@
 ```mermaid
 flowchart TD
     subgraph Avito Parser
-        A[Cron ⏰ \nmain.ts] --> B[worker.ts 🚜]
+        A[Cron ⏰  main.ts] --> B[worker.ts 🚜]
         B --> C{Parse list & ads}
         C --> D[export/*.html 📂]
         C --> E[cookies.json 🍪]
