@@ -49,7 +49,7 @@ flowchart TD
 version: "3.9"
 services:
   avito-parser:
-    image: ghcr.io/zxcnoname666/avito-parser:latest
+    image: ghcr.io/zxcnoname666/house-research/avito-parser:latest
     container_name: avito-parser
     restart: unless-stopped
     volumes:
