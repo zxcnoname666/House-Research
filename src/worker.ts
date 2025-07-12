@@ -68,7 +68,10 @@ export async function parseAd(browser: Browser, url: string) {
   await page.waitForNetworkIdle({ idleConnections: 0, idleTime: 1000 });
   console.debug("network idle");
 
-  const title = await page.evaluate(() => document.title);
+  const title = await page.evaluate(() => {
+    // @ts-expect-error — DOM, браузерный код.
+    return document.title;
+  });
   if (title.includes("Ошибка 404")) {
     console.warn("Page is 404");
     return;
@@ -171,12 +174,16 @@ export async function fastRandomScroll(page: Page) {
     const rand = (min: number, max: number) =>
       Math.random() * (max - min) + min;
 
+    // @ts-expect-error — DOM, браузерный код.
     const target = document.scrollingElement ?? document.documentElement;
     const start = performance.now();
 
+    // @ts-expect-error — DOM, браузерный код.
     while (target.scrollTop + innerHeight < target.scrollHeight) {
       // случайный шаг 250-450 px
       const step = rand(250, 450);
+      // @ts-expect-error — DOM, браузерный код.
+      // deno-lint-ignore no-window
       window.scrollBy({ top: step, behavior: "auto" });
 
       // случайная очень короткая пауза 10-35 мс
