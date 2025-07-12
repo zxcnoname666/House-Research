@@ -1,0 +1,11 @@
+name: 'avito parser'
+
+services:
+  parser:
+    container_name: 'avito parser'
+    image: ghcr.io/zxcnoname666/house-research/avito-parser:latest
+    restart: always
+    volumes:
+      - ./export:/app/export
+    environment:
+      AVITO_URL: https://www.avito.ru/...

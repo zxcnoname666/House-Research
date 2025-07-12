@@ -1,0 +1,54 @@
+name: format code
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  format-code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+
+      - name: Check formatting
+        run: |
+          deno fmt src
+          
+          if ! git diff --quiet; then
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add . # Добавить все изменения форматирования
+            git commit -m "auto: apply automatic code formatting [skip ci]"
+            git push origin HEAD:${{ github.head_ref || github.ref_name }} # Пуш в ту же ветку, откуда пришел триггер
+          else
+            echo "No formatting changes needed or applied."
+          fi
+
+
+      - name: Type check (strict)
+        run: deno check --all
+
+      - name: Dependency graph
+        run: deno info --json src/main.ts > deps.json
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deps-${{ matrix.deno }}
+          path: deps.json

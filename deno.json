@@ -1,0 +1,14 @@
+{
+  "tasks": {
+    "dev": "deno run -A --env-file=.env --unstable-cron main.ts",
+    "prod": "deno run -A --unstable-cron main.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "deno.ns"
+    ]
+  }
+}
