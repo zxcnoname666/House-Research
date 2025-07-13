@@ -171,6 +171,7 @@ async function firstLoad(page: Page) {
 async function checkBlocking(page: Page) {
   let blocked = false;
   while (await page.$(".firewall-container")) {
+    if (!blocked) console.error("😥 firewall blocked, bypass captcha manually...");
     await new Promise((resolve) => setTimeout(resolve, 1_000));
     blocked = true;
   }
