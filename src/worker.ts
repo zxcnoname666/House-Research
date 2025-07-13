@@ -54,7 +54,7 @@ export async function init(parseAds: boolean = true) {
   }
 
   for (const url in ads) {
-    console.info(`🍞 Processing ${url + 1}/${ads.length}`);
+    console.info(`🍞 Processing ${Number.parseInt(url) + 1}/${ads.length}`);
     await parseAd(browser, ads[url]).catch(console.error);
   }
 
