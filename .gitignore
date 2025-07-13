@@ -1,5 +1,4 @@
 .env
-ads.json
-cookies.json
+/json
 /export
 /.idea

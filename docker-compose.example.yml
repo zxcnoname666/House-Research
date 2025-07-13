@@ -7,5 +7,6 @@ services:
     restart: always
     volumes:
       - ./export:/app/export
+      - ./json:/app/json
     environment:
       AVITO_URL: https://www.avito.ru/...

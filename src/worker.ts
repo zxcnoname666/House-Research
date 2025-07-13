@@ -1,8 +1,9 @@
 import { type Browser, launch, type Page } from "jsr:@astral/astral";
 import { ensureDir, existsSync } from "jsr:@std/fs";
 
-const COOKIE_FILE = "cookies.json";
-const ADS_URL_FILE = "ads.json";
+await ensureDir("json");
+const COOKIE_FILE = "json/cookies.json";
+const ADS_URL_FILE = "json/ads.json";
 const ads: string[] = [];
 
 /** Пишем куки текущей страницы в JSON-файл */
