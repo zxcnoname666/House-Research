@@ -1,5 +1,5 @@
-import { type Browser, launch, type Page } from "jsr:@astral/astral";
-import { ensureDir, existsSync } from "jsr:@std/fs";
+import {type Browser, launch, type Page} from "jsr:@astral/astral";
+import {ensureDir, existsSync} from "jsr:@std/fs";
 
 await ensureDir("json");
 const COOKIE_FILE = "json/cookies.json";
@@ -21,9 +21,21 @@ export async function restoreCookies(page: Page, file = "cookies.json") {
 }
 
 export async function init(parseAds: boolean = true) {
-  await using browser = await launch({
-    headless: Deno.env.get("HEADLESS") === "true",
-  });
+  const headless = Deno.env.get("HEADLESS") === "true";
+  await using browser = await launch(
+          headless ? {
+            headless: true,
+            args: [
+                "--headless=new",
+                "--ozone-platform=none",
+                "--disable-features=UseOzonePlatform",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ],
+          } : {headless: false}
+      );
 
   if (parseAds) {
     await parseList(browser).catch(console.error);
@@ -56,7 +68,7 @@ export async function parseAd(browser: Browser, url: string) {
     return;
   }
 
-  await using page = await browser.newPage();
+      await using page = await browser.newPage();
   console.debug("page");
 
   await firstLoad(page);
@@ -66,7 +78,7 @@ export async function parseAd(browser: Browser, url: string) {
   await checkBlocking(page);
   console.debug("checkBlocking");
 
-  await page.waitForNetworkIdle({ idleConnections: 0, idleTime: 1000 });
+  await page.waitForNetworkIdle({idleConnections: 0, idleTime: 1000});
   console.debug("network idle");
 
   const title = await page.evaluate(() => {
@@ -80,8 +92,8 @@ export async function parseAd(browser: Browser, url: string) {
 
   const warning = await page.$('div[data-marker="item-view/closed-warning"]');
   if (
-    warning &&
-    (await warning.innerText()).toLowerCase().includes("снято с публикации")
+      warning &&
+      (await warning.innerText()).toLowerCase().includes("снято с публикации")
   ) {
     console.warn("Ad is closed");
     return;
