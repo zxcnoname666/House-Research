@@ -26,14 +26,17 @@
 flowchart TD
     subgraph Avito Parser
         A[Cron ⏰  main.ts] --> B[worker.ts 🚜]
-        B --> C{Parse list & ads}
-        C --> D[export/*.html 📂]
-        C --> E[cookies.json 🍪]
+        B --> C{Parse list}
+        C --> D{Parse ads}
+        D --> E[export/*.html 📂]
+        C --> F[json/cookies.json 🍪]
+        D --> F[json/cookies.json 🍪]
+        C --> J[json/ads.json 🔗]
     end
 
     subgraph House Research
-        D --> F(Data Processor 📊)
-        F --> G(Stats & Reports 📈)
+        E --> G(Data Processor 📊)
+        G --> H(Stats & Reports 📈)
     end
 ```
 
@@ -54,6 +57,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./export:/app/export
+      - ./json:/app/json
     environment:
       AVITO_URL: "https://www.avito.ru/all/kvartiry/sdam/na_dlitelnyy_srok" # 💡 ваш фильтр
 ```
