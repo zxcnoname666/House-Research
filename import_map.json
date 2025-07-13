@@ -13,13 +13,13 @@
     "@std/encoding": "jsr:@std/encoding@^1.0.10",
     "imagescript": "jsr:@matmen/imagescript@1.3.1",
     "mutex": "jsr:@117/mutex@1.0.8",
-    "workflow-core": "./src/workflow-core/index.ts",
+    "workflow-core": "./src/core/workflow-core.ts",
+    "#env": "./src/core/env.ts",
+    "#config": "./src/core/config.ts",
+    "#logger": "./src/core/logger.ts",
     "#telegram": "./src/telegram/index.ts",
     "#ai-agents/": "./src/ai-agents/",
     "#utils/": "./src/utils/",
-    "#workflows/": "./src/workflows/",
-    "#env": "./src/env.ts",
-    "#config": "./src/config.ts",
-    "#logger": "./src/logger.ts"
+    "#workflows/": "./src/workflows/"
   }
 }
