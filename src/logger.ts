@@ -125,5 +125,3 @@ Step.prototype.run = function (
 ) {
   return withCtx({ stepId: this.id }, () => origStepRun.call(this, ctx, bag));
 };
-
-log.info("Logger started");
