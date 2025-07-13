@@ -1,0 +1,8 @@
+{
+  "unstable": ["cron", "kv"],
+  "tasks": {
+    "dev": "deno run --allow-all --env-file=.env ./src/index.ts",
+    "compile": "deno compile --allow-all --env-file=.env --target=x86_64-unknown-linux-gnu --output bin/house-research ./src/index.ts"
+  },
+  "importMap": "./import_map.json"
+}

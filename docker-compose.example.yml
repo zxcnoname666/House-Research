@@ -1,0 +1,24 @@
+name: 'house research'
+
+services:
+  worker:
+    container_name: 'worker'
+    image: ghcr.io/zxcnoname666/house-research:latest
+    restart: always
+    volumes:
+      - ./kv:/app/kv
+      - ./conf:/app/conf
+      - ./avito-export:/avito-export
+    env_file:
+      - path: .env
+        required: true
+
+  parser:
+    container_name: 'avito parser'
+    image: ghcr.io/zxcnoname666/house-research/avito-parser:latest
+    restart: always
+    volumes:
+      - ./avito-export:/app/export
+      - ./avito-json:/app/json
+    environment:
+      AVITO_URL: https://www.avito.ru/...

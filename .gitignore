@@ -1,0 +1,5 @@
+.env
+/conf
+/kv
+/bin
+/.idea
