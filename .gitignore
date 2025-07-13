@@ -3,3 +3,4 @@
 /kv
 /bin
 /.idea
+.docker-compose.yml

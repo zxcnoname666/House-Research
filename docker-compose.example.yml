@@ -14,7 +14,7 @@ services:
         required: true
 
   parser:
-    container_name: 'avito parser'
+    container_name: 'avito-parser'
     image: ghcr.io/zxcnoname666/house-research/avito-parser:latest
     restart: always
     volumes:
@@ -22,3 +22,4 @@ services:
       - ./avito-json:/app/json
     environment:
       AVITO_URL: https://www.avito.ru/...
+      HEADLESS: true
