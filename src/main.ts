@@ -12,6 +12,8 @@ function run() {
     return;
   }
 
+  console.info("Starting processing");
+
   processing = true;
   init().catch(console.error).finally(
     () => processing = false,
