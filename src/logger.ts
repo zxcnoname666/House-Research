@@ -101,10 +101,10 @@ if (typeof origCron === "function") {
 }
 
 const origWfRun = Workflow.prototype.run;
-// @ts-expect-error its work
 Workflow.prototype.run = function (
-  this: Workflow<any, any>,
-  trigger: unknown,
+    // @ts-expect-error its work
+    this: Workflow<any, any>,
+    trigger: unknown,
 ): any {
   const wfName = (this as any).name ?? "-";
   return withCtx({
