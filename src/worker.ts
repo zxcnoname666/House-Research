@@ -1,4 +1,9 @@
-import { type Browser, launch, type Page, type ElementHandle } from "jsr:@astral/astral";
+import {
+  type Browser,
+  type ElementHandle,
+  launch,
+  type Page,
+} from "jsr:@astral/astral";
 import { ensureDir, existsSync } from "jsr:@std/fs";
 
 await ensureDir("json");
@@ -125,7 +130,7 @@ export async function parseList(browser: Browser) {
 
   console.debug("reading ads");
 
-  if (await page.$("div[data-marker=\"map-full\"]")) {
+  if (await page.$('div[data-marker="map-full"]')) {
     await parseMapList(page);
   } else {
     await parseBasicList(page);
@@ -181,20 +186,20 @@ async function firstLoad(page: Page) {
 
 async function getLinks(items: ElementHandle[]) {
   const offersLinks = await Promise.all(
-      items.map((el) => el.$("a[href]")),
+    items.map((el) => el.$("a[href]")),
   );
   const offersAttributes = await Promise.all(
-      offersLinks.map((a) => a?.getAttribute("href")),
+    offersLinks.map((a) => a?.getAttribute("href")),
   );
   const offersUrls = offersAttributes.filter((a) =>
-      a && a?.includes("/kvartiry/")
+    a && a?.includes("/kvartiry/")
   )
-      .map((url) => {
-        if (!url) return null;
-        if (url.includes("avito.ru/")) return url;
-        return `https://avito.ru/${url}`.replace(/\/\//g, "/");
-      })
-      .filter(Boolean) as string[];
+    .map((url) => {
+      if (!url) return null;
+      if (url.includes("avito.ru/")) return url;
+      return `https://avito.ru/${url}`.replace(/\/\//g, "/");
+    })
+    .filter(Boolean) as string[];
 
   console.debug(offersUrls.length, "offersUrls");
 
@@ -253,41 +258,41 @@ export async function fastRandomScroll(page: Page) {
  * @param item        — селектор «карточки», за числом которых следим
  */
 export async function smartScrollAstral(
-    page: Page,
-    item: string = '*[itemType="http://schema.org/Product]"',
+  page: Page,
+  item: string = '*[itemType="http://schema.org/Product]"',
 ): Promise<number> {
   // 1. Ждём сам контейнер и «ставим» курсор внутрь
-  console.log("item", item)
+  console.log("item", item);
   const box = await page.waitForSelector(item);
   const rect = await box.boundingBox();
   if (!rect) throw new Error("Container is not visible");
-  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);  // фокус на блок
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2); // фокус на блок
 
   // 2. Функции случайного шага и паузы
   const rnd = (min: number, max: number) =>
-      Math.floor(Math.random() * (max - min + 1)) + min;
+    Math.floor(Math.random() * (max - min + 1)) + min;
 
-  let lastCount = (await page.$$(item)).length;  // сколько карточек было
-  let idleMs    = 0;                            // сколько времени прироста нет
+  let lastCount = (await page.$$(item)).length; // сколько карточек было
+  let idleMs = 0; // сколько времени прироста нет
 
   // 3. Главный цикл
-  while (idleMs < 10_000) {                     // 10 секунд без прироста — стоп
-    const step  = rnd(1400, 1850);                // пикселей колёсиком
-    const pause = rnd(300, 900);                // задержка после прокрутки
+  while (idleMs < 10_000) { // 10 секунд без прироста — стоп
+    const step = rnd(1400, 1850); // пикселей колёсиком
+    const pause = rnd(300, 900); // задержка после прокрутки
 
-    await page.mouse.wheel({ deltaY: step });   // прокрутка контейнера
-    await page.waitForTimeout(pause);           // пауза (надёжнее, чем setTimeout)
+    await page.mouse.wheel({ deltaY: step }); // прокрутка контейнера
+    await page.waitForTimeout(pause); // пауза (надёжнее, чем setTimeout)
 
-    const curr = (await page.$$(item)).length;   // пересчитываем элементы
+    const curr = (await page.$$(item)).length; // пересчитываем элементы
     console.debug(curr, "curr", lastCount, "lastCount");
     if (curr > lastCount) {
-      lastCount = curr;                         // есть новые → сброс счётчика
+      lastCount = curr; // есть новые → сброс счётчика
       idleMs = 0;
     } else {
-      idleMs += pause;                          // прироста нет → копим «пустое» время
+      idleMs += pause; // прироста нет → копим «пустое» время
     }
   }
 
-  console.log(lastCount, "lastCount")
-  return lastCount;                             // итоговое число карточек
+  console.log(lastCount, "lastCount");
+  return lastCount; // итоговое число карточек
 }
