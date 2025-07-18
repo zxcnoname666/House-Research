@@ -125,7 +125,7 @@ export async function parseList(browser: Browser) {
   await using page = await browser.newPage();
   console.debug("page");
 
-  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.setViewportSize({ width: 3440, height: 1440 });
   console.debug("setViewportSize");
 
   await firstLoad(page);
