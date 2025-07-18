@@ -1,4 +1,4 @@
-import { type Browser, launch, type Page } from "jsr:@astral/astral";
+import { type Browser, launch, type Page, type ElementHandle } from "jsr:@astral/astral";
 import { ensureDir, existsSync } from "jsr:@std/fs";
 
 await ensureDir("json");
@@ -115,6 +115,9 @@ export async function parseList(browser: Browser) {
   await using page = await browser.newPage();
   console.debug("page");
 
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  console.debug("setViewportSize");
+
   await firstLoad(page);
   console.debug("firstLoad");
   await page.goto(Deno.env.get("AVITO_URL")!);
@@ -122,27 +125,39 @@ export async function parseList(browser: Browser) {
 
   console.debug("reading ads");
 
+  if (await page.$("div[data-marker=\"map-full\"]")) {
+    await parseMapList(page);
+  } else {
+    await parseBasicList(page);
+  }
+
+  console.debug(ads.length, "ads");
+
+  await saveCookies(page, COOKIE_FILE);
+
+  await Deno.writeTextFile(ADS_URL_FILE, JSON.stringify(ads, null, 2));
+}
+
+async function parseMapList(page: Page) {
+  const listSel = '*[itemType="http://schema.org/Product"]';
+
+  await smartScrollAstral(page, listSel);
+  console.debug("smartScroll");
+
+  const offersRoot = await page.$$(listSel);
+  console.debug("offersRoot", offersRoot.length);
+
+  const offersUrls = await getLinks(offersRoot);
+  ads.push(...offersUrls);
+  console.debug(ads.length, "ads");
+}
+
+async function parseBasicList(page: Page) {
   while (true) {
     await checkBlocking(page);
 
     const offersRoot = await page.$$('*[itemType="http://schema.org/Product"]');
-    const offersLinks = await Promise.all(
-      offersRoot.map((el) => el.$("a[href]")),
-    );
-    const offersAttributes = await Promise.all(
-      offersLinks.map((a) => a?.getAttribute("href")),
-    );
-    const offersUrls = offersAttributes.filter((a) =>
-      a && a?.includes("/kvartiry/")
-    )
-      .map((url) => {
-        if (!url) return null;
-        if (url.includes("avito.ru/")) return url;
-        return `https://avito.ru/${url}`.replace(/\/\//g, "/");
-      })
-      .filter(Boolean) as string[];
-
-    console.debug(offersUrls.length, "offersUrls");
+    const offersUrls = await getLinks(offersRoot);
     ads.push(...offersUrls);
 
     await fastRandomScroll(page);
@@ -157,17 +172,33 @@ export async function parseList(browser: Browser) {
     console.debug("page is loaded");
     await new Promise((resolve) => setTimeout(resolve, 1_000));
   }
-
-  console.debug(ads.length, "ads");
-
-  await saveCookies(page, COOKIE_FILE);
-
-  await Deno.writeTextFile(ADS_URL_FILE, JSON.stringify(ads, null, 2));
 }
 
 async function firstLoad(page: Page) {
   await restoreCookies(page, COOKIE_FILE)
     .catch(console.debug);
+}
+
+async function getLinks(items: ElementHandle[]) {
+  const offersLinks = await Promise.all(
+      items.map((el) => el.$("a[href]")),
+  );
+  const offersAttributes = await Promise.all(
+      offersLinks.map((a) => a?.getAttribute("href")),
+  );
+  const offersUrls = offersAttributes.filter((a) =>
+      a && a?.includes("/kvartiry/")
+  )
+      .map((url) => {
+        if (!url) return null;
+        if (url.includes("avito.ru/")) return url;
+        return `https://avito.ru/${url}`.replace(/\/\//g, "/");
+      })
+      .filter(Boolean) as string[];
+
+  console.debug(offersUrls.length, "offersUrls");
+
+  return offersUrls;
 }
 
 async function checkBlocking(page: Page) {
@@ -213,4 +244,50 @@ export async function fastRandomScroll(page: Page) {
       if (performance.now() - start > 15_000) break;
     }
   });
+}
+/**
+ * Скроллит контейнер рандомными рывками, пока внутри
+ * появляются новые элементы или не пройдёт 10 с без прироста.
+ *
+ * @param page        — открытая страница Astral
+ * @param item        — селектор «карточки», за числом которых следим
+ */
+export async function smartScrollAstral(
+    page: Page,
+    item: string = '*[itemType="http://schema.org/Product]"',
+): Promise<number> {
+  // 1. Ждём сам контейнер и «ставим» курсор внутрь
+  console.log("item", item)
+  const box = await page.waitForSelector(item);
+  const rect = await box.boundingBox();
+  if (!rect) throw new Error("Container is not visible");
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);  // фокус на блок
+
+  // 2. Функции случайного шага и паузы
+  const rnd = (min: number, max: number) =>
+      Math.floor(Math.random() * (max - min + 1)) + min;
+
+  let lastCount = (await page.$$(item)).length;  // сколько карточек было
+  let idleMs    = 0;                            // сколько времени прироста нет
+
+  // 3. Главный цикл
+  while (idleMs < 10_000) {                     // 10 секунд без прироста — стоп
+    const step  = rnd(1400, 1850);                // пикселей колёсиком
+    const pause = rnd(300, 900);                // задержка после прокрутки
+
+    await page.mouse.wheel({ deltaY: step });   // прокрутка контейнера
+    await page.waitForTimeout(pause);           // пауза (надёжнее, чем setTimeout)
+
+    const curr = (await page.$$(item)).length;   // пересчитываем элементы
+    console.debug(curr, "curr", lastCount, "lastCount");
+    if (curr > lastCount) {
+      lastCount = curr;                         // есть новые → сброс счётчика
+      idleMs = 0;
+    } else {
+      idleMs += pause;                          // прироста нет → копим «пустое» время
+    }
+  }
+
+  console.log(lastCount, "lastCount")
+  return lastCount;                             // итоговое число карточек
 }
