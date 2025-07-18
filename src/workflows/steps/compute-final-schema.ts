@@ -21,7 +21,7 @@ const outputZod = z.object({
 
 export default new Step<
   unknown,
-    z.infer<typeof outputZod>
+  z.infer<typeof outputZod>
 >({
   id: "computeFinalSchema",
   outputSchema: outputZod,

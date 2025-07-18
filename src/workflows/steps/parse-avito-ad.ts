@@ -22,7 +22,7 @@ const outputZod = z.object({
 
 export const parseAvitoAdFromUrl = new Step<
   { url: string },
-    z.infer<typeof outputZod>
+  z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: z.object({ url: z.string() }),
@@ -32,7 +32,7 @@ export const parseAvitoAdFromUrl = new Step<
 
 export const parseAvitoAdFromHtml = new Step<
   { html: string },
-    z.infer<typeof outputZod>
+  z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: z.object({ html: z.string() }),

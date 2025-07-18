@@ -24,8 +24,8 @@ const outputZod = z.object({
 });
 
 export const parseCianAdFromAgent = new Step<
-    z.infer<typeof inputZod>,
-    z.infer<typeof outputZod>
+  z.infer<typeof inputZod>,
+  z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: inputZod,
@@ -49,7 +49,7 @@ export const parseCianAdFromAgent = new Step<
 
 export const parseCianAdFromUrl = new Step<
   { url: string },
-    z.infer<typeof outputZod>
+  z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: z.object({ url: z.string() }),

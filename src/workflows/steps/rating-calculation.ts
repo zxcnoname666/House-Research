@@ -19,7 +19,7 @@ export const inputZod = z.object({
 });
 
 export default new Step<
-    z.infer<typeof inputZod>,
+  z.infer<typeof inputZod>,
   { message: string }
 >({
   id: "ratingCalculation",
