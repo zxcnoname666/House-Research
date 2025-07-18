@@ -7,37 +7,29 @@ import { spyFetch } from "#utils/spyFetch.ts";
 import { mergeImages } from "#utils/imageBase.ts";
 import { log } from "#logger";
 
+const inputZod = z.object({
+  exportUrl: z.string(),
+  images: z.array(z.string()),
+  title: z.string(),
+  address: z.string(),
+  metadata: z.string(),
+});
+
+const outputZod = z.object({
+  mergedImage: z.string(),
+  images: z.array(z.string()),
+  description: z.string(),
+  title: z.string(),
+  address: z.string(),
+});
+
 export const parseCianAdFromAgent = new Step<
-  {
-    exportUrl: string;
-    images: string[];
-    title: string;
-    address: string;
-    metadata: string;
-  },
-  {
-    mergedImage: string;
-    images: string[];
-    description: string;
-    title: string;
-    address: string;
-  }
+    z.infer<typeof inputZod>,
+    z.infer<typeof outputZod>
 >({
   id: "parseAd",
-  inputSchema: z.object({
-    exportUrl: z.string(),
-    images: z.array(z.string()),
-    title: z.string(),
-    address: z.string(),
-    metadata: z.string(),
-  }),
-  outputSchema: z.object({
-    mergedImage: z.string(),
-    images: z.array(z.string()),
-    description: z.string(),
-    title: z.string(),
-    address: z.string(),
-  }),
+  inputSchema: inputZod,
+  outputSchema: outputZod,
   async execute({ exportUrl, images, title, address, metadata }) {
     const mergedImage = await mergeImages(images, { jpeg: true, quality: 80 });
     const description =
@@ -57,37 +49,17 @@ export const parseCianAdFromAgent = new Step<
 
 export const parseCianAdFromUrl = new Step<
   { url: string },
-  {
-    mergedImage: string;
-    images: string[];
-    description: string;
-    title: string;
-    address: string;
-  }
+    z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: z.object({ url: z.string() }),
-  outputSchema: z.object({
-    mergedImage: z.string(),
-    images: z.array(z.string()),
-    description: z.string(),
-    title: z.string(),
-    address: z.string(),
-  }),
+  outputSchema: outputZod,
   execute: runStep,
 });
 
 async function runStep(
   { url: urlString }: { url: string },
-): Promise<
-  {
-    mergedImage: string;
-    images: string[];
-    description: string;
-    title: string;
-    address: string;
-  }
-> {
+): Promise<z.infer<typeof outputZod>> {
   const url = new URL(urlString);
   if (!url.host.endsWith("cian.ru")) throw new Error("not cian ad");
 

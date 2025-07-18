@@ -8,32 +8,23 @@ import finalRewrite from "#ai-agents/prompts/final-rewrite.ts";
 import titleMaker from "#ai-agents/prompts/title-maker.ts";
 import { log } from "#logger";
 
-export interface Output {
-  message: string;
-  title: string;
-  address: string;
-  routes: string;
-  operators: string;
-  images: string[];
-  ratingKey: string;
-  geo: { lat: number; lon: number };
-}
+const outputZod = z.object({
+  message: z.string(),
+  title: z.string(),
+  address: z.string(),
+  routes: z.string(),
+  operators: z.string(),
+  images: z.array(z.string()),
+  ratingKey: z.string(),
+  geo: z.object({ lat: z.number(), lon: z.number() }),
+});
 
 export default new Step<
   unknown,
-  Output
+    z.infer<typeof outputZod>
 >({
   id: "computeFinalSchema",
-  outputSchema: z.object({
-    message: z.string(),
-    title: z.string(),
-    address: z.string(),
-    routes: z.string(),
-    operators: z.string(),
-    images: z.array(z.string()),
-    ratingKey: z.string(),
-    geo: z.object({ lat: z.number(), lon: z.number() }),
-  }),
+  outputSchema: outputZod,
   async execute(_, bag) {
     log.debug("run step");
     const { title, address, routes, operators, images } = extractBag(bag);

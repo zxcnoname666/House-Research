@@ -12,47 +12,31 @@ import { log } from "#logger";
 import avitoParser from "#ai-agents/prompts/avito-parser.ts";
 import { encodeBase64 } from "@std/encoding";
 
+const outputZod = z.object({
+  mergedImage: z.string(),
+  images: z.array(z.string()),
+  description: z.string(),
+  title: z.string(),
+  address: z.string(),
+});
+
 export const parseAvitoAdFromUrl = new Step<
   { url: string },
-  {
-    mergedImage: string;
-    images: string[];
-    description: string;
-    title: string;
-    address: string;
-  }
+    z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: z.object({ url: z.string() }),
-  outputSchema: z.object({
-    mergedImage: z.string(),
-    images: z.array(z.string()),
-    description: z.string(),
-    title: z.string(),
-    address: z.string(),
-  }),
+  outputSchema: outputZod,
   execute: runStep,
 });
 
 export const parseAvitoAdFromHtml = new Step<
   { html: string },
-  {
-    mergedImage: string;
-    images: string[];
-    description: string;
-    title: string;
-    address: string;
-  }
+    z.infer<typeof outputZod>
 >({
   id: "parseAd",
   inputSchema: z.object({ html: z.string() }),
-  outputSchema: z.object({
-    mergedImage: z.string(),
-    images: z.array(z.string()),
-    description: z.string(),
-    title: z.string(),
-    address: z.string(),
-  }),
+  outputSchema: outputZod,
   execute: runCore,
 });
 
@@ -76,15 +60,7 @@ async function runStep(
 
 async function runCore(
   { html }: { html: string },
-): Promise<
-  {
-    mergedImage: string;
-    images: string[];
-    description: string;
-    title: string;
-    address: string;
-  }
-> {
+): Promise<z.infer<typeof outputZod>> {
   if (html.includes('<h2 class="firewall-title">Доступ ограничен')) {
     throw new Error("Cannot parse avito ad from url");
   }

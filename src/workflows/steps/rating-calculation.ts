@@ -8,30 +8,22 @@ import calculateRating from "#ai-agents/prompts/calculate-rating.ts";
 import { log } from "#logger";
 import { parseBase64Url } from "#utils/imageBase.ts";
 
-export interface Input {
-  stops: string;
-  routes: string[];
-  operators: string[];
-  mergedImage: string;
-  description: string;
-  title: string;
-  address: string;
-}
+export const inputZod = z.object({
+  stops: z.string(),
+  routes: z.array(z.string()),
+  operators: z.array(z.string()),
+  mergedImage: z.string(),
+  description: z.string(),
+  title: z.string(),
+  address: z.string(),
+});
 
 export default new Step<
-  Input,
+    z.infer<typeof inputZod>,
   { message: string }
 >({
   id: "ratingCalculation",
-  inputSchema: z.object({
-    stops: z.string(),
-    routes: z.array(z.string()),
-    operators: z.array(z.string()),
-    mergedImage: z.string(),
-    description: z.string(),
-    title: z.string(),
-    address: z.string(),
-  }),
+  inputSchema: inputZod,
   outputSchema: z.object({ message: z.string() }),
   async execute(
     { stops, routes, operators, mergedImage, description, title, address },
