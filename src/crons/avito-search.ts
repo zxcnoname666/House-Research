@@ -39,7 +39,7 @@ async function run() {
     ads.push({
       file: entry.name.split(".html")[0],
       html: text,
-      path: join(avitoDiskPath, entry.name)
+      path: join(avitoDiskPath, entry.name),
     });
   }
 
@@ -56,7 +56,11 @@ async function run() {
 }
 
 async function handleOffer(
-  { file: offerKey, html: offer, path }: { file: string; html: string; path: string },
+  { file: offerKey, html: offer, path }: {
+    file: string;
+    html: string;
+    path: string;
+  },
 ) {
   // 1) уже сохранено в KV?
   const existsInKv = (await kv.get<boolean>(["offers", offerKey])).value;
