@@ -4,6 +4,7 @@ import { Config } from "#config";
 import { log } from "#logger";
 import { pooledMap } from "@std/async";
 import { ensureDirSync } from "@std/fs";
+import { join } from "@std/path";
 
 // ----------------------------  KV & очередь  ----------------------------
 ensureDirSync("kv");
@@ -25,7 +26,7 @@ async function run() {
 
   const avitoDiskPath = (await Config.get()).avitoDiskPath;
 
-  const ads: { file: string; html: string }[] = [];
+  const ads: { file: string; html: string; path: string }[] = [];
 
   // ------------ собираем страницы ------------
   for (const entry of Deno.readDirSync(avitoDiskPath)) {
@@ -38,6 +39,7 @@ async function run() {
     ads.push({
       file: entry.name.split(".html")[0],
       html: text,
+      path: join(avitoDiskPath, entry.name)
     });
   }
 
@@ -54,7 +56,7 @@ async function run() {
 }
 
 async function handleOffer(
-  { file: offerKey, html: offer }: { file: string; html: string },
+  { file: offerKey, html: offer, path }: { file: string; html: string; path: string },
 ) {
   // 1) уже сохранено в KV?
   const existsInKv = (await kv.get<boolean>(["offers", offerKey])).value;
@@ -89,7 +91,9 @@ async function handleOffer(
     await kv.set(["offers", offerKey], true);
   } catch (err) {
     // уведомляем о сбое
-    log.error(err);
+    log.debug(err);
+    // удаляем проблемный файл, чтобы его перепарсило
+    await Deno.remove(path, { recursive: true }).catch(console.trace);
   } finally {
     // снимаем пометку «в процессе» вне зависимости от результата
     processingQueue.delete(offerKey);
