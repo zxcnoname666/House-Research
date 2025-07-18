@@ -39,6 +39,8 @@ export async function init(parseAds: boolean = true) {
       : { headless: false },
   );
 
+  ads.length = 0;
+
   if (parseAds) {
     await parseList(browser).catch(console.error);
   } else {
